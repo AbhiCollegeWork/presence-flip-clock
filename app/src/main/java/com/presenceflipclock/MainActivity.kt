@@ -248,20 +248,30 @@ class MainActivity : AppCompatActivity() {
         }
         fun label(t: String) = TextView(this).apply { text = t; setPadding(0, pad, 0, 0) }
 
+        // A titled slider whose label shows the live value as you drag, e.g. "Dim after: 30 s".
+        fun sliderRow(title: String, min: Int, max: Int, value: Int, unit: String): SeekBar {
+            val lbl = label("$title: $value$unit")
+            val sb = seek(min, max, value)
+            sb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(s: SeekBar, progress: Int, fromUser: Boolean) {
+                    lbl.text = "$title: ${progress + min}$unit"
+                }
+                override fun onStartTrackingTouch(s: SeekBar) {}
+                override fun onStopTrackingTouch(s: SeekBar) {}
+            })
+            box.addView(lbl); box.addView(sb)
+            return sb
+        }
+
         box.addView(label(getString(R.string.set_format)))
         val fmt = android.widget.Switch(this).apply {
             text = getString(R.string.set_24h); isChecked = prefs.use24h
         }
         box.addView(fmt)
 
-        box.addView(label(getString(R.string.set_sensitivity)))
-        val sens = seek(1, 10, prefs.sensitivity); box.addView(sens)
-
-        box.addView(label(getString(R.string.set_timeout)))
-        val to = seek(5, 300, prefs.idleTimeoutSec); box.addView(to)
-
-        box.addView(label(getString(R.string.set_dim)))
-        val dim = seek(0, 60, prefs.dimPercent); box.addView(dim)
+        val sens = sliderRow(getString(R.string.set_sensitivity), 1, 10, prefs.sensitivity, "")
+        val to = sliderRow(getString(R.string.set_timeout), 5, 300, prefs.idleTimeoutSec, " s")
+        val dim = sliderRow(getString(R.string.set_dim), 0, 60, prefs.dimPercent, " %")
 
         box.addView(label(getString(R.string.set_screenoff)))
         val offMode = android.widget.Switch(this).apply {

@@ -8,11 +8,15 @@ No root. No special hardware. No account. Nothing leaves the device.
 
 ## Screenshots
 
-| Clock | Settings (long-press) |
-|---|---|
-| ![Flip clock](docs/screenshots/clock-portrait.png) | ![Settings](docs/screenshots/settings-portrait.png) |
+The flip animation, captured on a real device (Samsung Galaxy S25 Ultra):
 
-On a real device (Samsung Galaxy S25 Ultra, Android 16), landscape:
+![Flip clock animation](docs/screenshots/clock-flip.gif)
+
+| Clock | Settings (live values, long-press) |
+|---|---|
+| ![Flip clock](docs/screenshots/clock-portrait.png) | ![Settings](docs/screenshots/settings-values-landscape.png) |
+
+On a real device, landscape:
 
 ![Clock on device](docs/screenshots/device-clock-landscape.png)
 
@@ -52,7 +56,7 @@ anywhere - it is a few hundred brightness samples in memory, discarded immediate
 - Tap anywhere to wake (works even if you deny the camera)
 - Shows over the lock screen, stays full-screen, keeps the screen on
 - Gentle anti-burn-in pixel shift
-- Long-press to open settings
+- Long-press to open settings; sliders show their live value as you drag (e.g. "Dim after: 30 s")
 
 ## Permissions
 
