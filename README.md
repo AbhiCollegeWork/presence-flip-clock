@@ -6,7 +6,19 @@ and fades to **near-black when the room is still**, then lights back up the mome
 
 No root. No special hardware. No account. Nothing leaves the device.
 
-<!-- Add a photo/GIF of your phone running it here once you have one. -->
+## Screenshots
+
+| Clock | Settings (long-press) |
+|---|---|
+| ![Flip clock](docs/screenshots/clock-portrait.png) | ![Settings](docs/screenshots/settings-portrait.png) |
+
+On a real device (Samsung Galaxy S25 Ultra, Android 16), landscape:
+
+![Clock on device](docs/screenshots/device-clock-landscape.png)
+
+> Presence dimming changes the backlight, not the pixels, so screenshots always look bright -
+> the dim/brighten effect is only visible on the physical panel. See
+> [docs/TESTING.md](docs/TESTING.md).
 
 ## Why brightness, not screen-off?
 
@@ -69,10 +81,12 @@ Notes from building this locally:
 
 ## Verified
 
-Built with the Android SDK (compileSdk 34, build-tools 34) on JDK 17 and smoke-tested on a
-Pixel 5 (API 34) emulator: launches clean, the flip clock and date render, tap-to-wake and
-the long-press settings dialog work, and it falls back gracefully when no camera is present.
-Live camera motion sensing needs a real device (emulators usually have no usable front camera).
+Built with the Android SDK (compileSdk 34, build-tools 34) on JDK 17, and tested on both a
+Pixel 5 (API 34) emulator and a real **Samsung Galaxy S25 Ultra (Android 16)**: launches
+clean, flip clock + date render (portrait and landscape), clock ticks, tap-to-wake and the
+long-press settings dialog work. On the real device the **front camera binds and streams**,
+so presence sensing is exercised on real hardware; with no camera (emulator) it falls back to
+tap-to-wake. Full matrix in [docs/TESTING.md](docs/TESTING.md).
 
 ## Tips for a good desk clock
 
@@ -91,6 +105,13 @@ Live camera motion sensing needs a real device (emulators usually have no usable
 
 Kotlin, CameraX (`ImageAnalysis` only, no preview surface), plain Android Views, no
 third-party UI libraries. Min SDK 21, target SDK 34.
+
+## Documentation
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - components, data flow, and the
+  brightness-not-power design rationale.
+- [docs/TESTING.md](docs/TESTING.md) - test environments (PC SDK, Pixel 5 emulator,
+  S25 Ultra real device, CI) and the verification matrix.
 
 ## License
 
