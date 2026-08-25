@@ -55,11 +55,24 @@ anywhere - it is a few hundred brightness samples in memory, discarded immediate
 
 **Build it yourself:**
 - Open the project in Android Studio (Giraffe or newer) and Run, or
-- From a machine with the Android SDK: `gradle :app:assembleDebug`
+- From a machine with the Android SDK and a JDK 17: `./gradlew :app:assembleDebug`
   (the APK lands in `app/build/outputs/apk/debug/`).
+
+Notes from building this locally:
+- Build with **JDK 17** (`JAVA_HOME` pointed at a 17 JDK). AGP 8.5 is happiest there.
+- Avoid a project path with **spaces** on Windows - AGP's JDK-image step can choke on it.
+- Create `local.properties` with your SDK path using forward slashes, e.g.
+  `sdk.dir=C:/Users/you/AppData/Local/Android/Sdk` (it is git-ignored).
 
 > This ships as a **debug** APK for simplicity. To publish a signed release build, add your
 > own signing config - see the Android docs on app signing.
+
+## Verified
+
+Built with the Android SDK (compileSdk 34, build-tools 34) on JDK 17 and smoke-tested on a
+Pixel 5 (API 34) emulator: launches clean, the flip clock and date render, tap-to-wake and
+the long-press settings dialog work, and it falls back gracefully when no camera is present.
+Live camera motion sensing needs a real device (emulators usually have no usable front camera).
 
 ## Tips for a good desk clock
 
