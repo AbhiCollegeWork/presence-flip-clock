@@ -125,6 +125,11 @@ third-party UI libraries. Min SDK 21, target SDK 34.
 
 ## Documentation
 
+- [docs/REPRODUCE.md](docs/REPRODUCE.md) - **build, run, and release this from a fresh clone**,
+  step by step (Windows + Android SDK).
+- [docs/BUILD_NOTES.md](docs/BUILD_NOTES.md) - **every problem hit while building this and the
+  fix** (toolchain, 16 KB compliance, Device Admin, presence-detection calibration, CI). Read
+  this if something breaks - you probably will not be the first.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - components, data flow, and the
   brightness-not-power design rationale.
 - [docs/TESTING.md](docs/TESTING.md) - test environments (PC SDK, Pixel 5 emulator,
