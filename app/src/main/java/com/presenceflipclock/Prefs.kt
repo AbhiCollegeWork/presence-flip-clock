@@ -21,8 +21,8 @@ class Prefs(ctx: Context) {
         get() = sp.getInt("sensitivity", 5)
         set(v) { sp.edit().putInt("sensitivity", v.coerceIn(1, 10)).apply() }
 
-    /** Brightness (0..100 %) the screen dims to when idle. */
+    /** Brightness (0..100 %) the screen dims to when idle. 0 = fully dark (looks off on OLED). */
     var dimPercent: Int
-        get() = sp.getInt("dimPercent", 2)
+        get() = sp.getInt("dimPercent", 0)
         set(v) { sp.edit().putInt("dimPercent", v.coerceIn(0, 60)).apply() }
 }

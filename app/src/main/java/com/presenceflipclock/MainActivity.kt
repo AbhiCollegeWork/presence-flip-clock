@@ -157,7 +157,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setBrightness(target: Float, animate: Boolean): Unit {
-        val clamped = target.coerceIn(0.01f, 1f)
+        val clamped = target.coerceIn(0f, 1f)   // 0f = fully dark (near-off on OLED)
+        android.util.Log.d("PresenceClock", "brightness -> %.2f (animate=%b)".format(clamped, animate))
         val lp = window.attributes
         val from = if (lp.screenBrightness < 0f) 1f else lp.screenBrightness
         brightnessAnim?.cancel()

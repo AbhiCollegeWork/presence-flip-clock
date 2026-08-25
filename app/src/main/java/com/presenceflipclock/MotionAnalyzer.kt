@@ -1,5 +1,6 @@
 package com.presenceflipclock
 
+import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import kotlin.math.abs
@@ -20,6 +21,14 @@ class MotionAnalyzer(
     private val gridW = 32
     private val gridH = 24
     private var prev: IntArray? = null
+    private var frameCount = 0
+
+    // Below this mean luminance the scene is effectively dark (covered lens, lights off,
+    // face-down). Dark frames are dominated by sensor NOISE, whose frame-to-frame diff can
+    // exceed the motion threshold and falsely read as constant motion - which kept the clock
+    // awake when the camera was covered. A dark scene cannot show presence anyway, so treat
+    // it as "no motion" and let the idle timer dim the clock.
+    private val darkLumaFloor = 12
 
     override fun analyze(image: ImageProxy) {
         try {
@@ -42,16 +51,28 @@ class MotionAnalyzer(
                 }
             }
 
+            var sum = 0L
+            for (v in cur) sum += v
+            val luma = sum.toDouble() / cur.size          // overall scene brightness
+
             val p = prev
-            if (p != null) {
+            var meanDiff = 0.0
+            var fired = false
+            if (p != null && luma >= darkLumaFloor) {      // skip motion in a dark/covered scene
                 var diff = 0L
                 for (i in cur.indices) diff += abs(cur[i] - p[i])
-                val mean = diff.toDouble() / cur.size
+                meanDiff = diff / cur.size.toDouble()
                 // sensitivity 1 -> threshold ~14 (big motion), 10 -> ~3 (twitchy)
                 val threshold = 14.0 - (sensitivity().coerceIn(1, 10) - 1) * 1.2
-                if (mean > threshold) onMotion()
+                if (meanDiff > threshold) { onMotion(); fired = true }
             }
             prev = cur
+
+            // light heartbeat (~every 10s at 30fps): filter logcat with tag PresenceClock
+            if (frameCount++ % 300 == 0) {
+                Log.d("PresenceClock", "luma=%.1f diff=%.1f dark=%b motion=%b".format(
+                    luma, meanDiff, luma < darkLumaFloor, fired))
+            }
         } catch (_: Throwable) {
             // never let a bad frame crash the clock
         } finally {

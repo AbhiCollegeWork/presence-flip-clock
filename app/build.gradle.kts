@@ -42,8 +42,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
 
-    // CameraX - front-camera frame analysis only (no preview surface, no photos)
-    val camerax = "1.3.4"
+    // CameraX - front-camera frame analysis only (no preview surface, no photos).
+    // 1.4.x ships 16 KB-aligned native libs (required by Android 15/16 page-size devices).
+    val camerax = "1.4.2"
     implementation("androidx.camera:camera-core:$camerax")
     implementation("androidx.camera:camera-camera2:$camerax")
     implementation("androidx.camera:camera-lifecycle:$camerax")

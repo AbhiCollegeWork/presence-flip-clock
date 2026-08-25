@@ -23,7 +23,25 @@
 | Long-press settings dialog | PASS | PASS |
 | Tap-to-wake | PASS | PASS |
 | Front camera binds (presence path) | n/a (AVD has no camera) -> graceful fallback shown | **PASS** (`CameraService::connect ... camera ID 1`, CameraX streaming) |
-| Presence keeps display awake | n/a | PASS (stayed bright 40 s untouched while camera saw room motion) |
+| Presence keeps display awake | n/a | PASS (stayed bright while camera saw room motion) |
+| Idle/covered -> dim to 0 | n/a | **PASS** - covered camera, logcat: `brightness -> 0.00` ~30 s later |
+| Motion/tap -> wake | PASS | **PASS** - logcat: `brightness -> 1.00` on tap |
+| 16 KB-aligned native libs (Android 15/16) | n/a | **PASS** - both CameraX `.so` LOAD segments align `0x4000` |
+
+### Verified presence loop (real device, logcat, tag `PresenceClock`)
+
+```
+brightness -> 1.00 (launch)
+luma=7.7 diff=0.0 dark=true motion=false   (camera covered)
+brightness -> 0.00 (animate=true)          (~30 s idle -> dims fully, looks off on OLED)
+brightness -> 1.00 (animate=true)          (tap/motion -> wakes)
+```
+
+Two bugs found and fixed during device testing:
+1. **Covered camera never dimmed** - a dark lens produces noisy frames whose diff read as
+   constant motion. Fixed with a dark-luminance gate (`luma < 12` -> no motion).
+2. **16 KB compatibility warning** on Android 16 - CameraX 1.3.4 shipped non-16 KB-aligned
+   native libs. Fixed by upgrading to CameraX 1.4.2. Default dim is now 0 % (fully dark).
 
 ## Known limitations / notes
 
