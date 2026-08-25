@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Presence Flip Clock</string>
+    <string name="no_camera_hint">Presence sensing off (no camera). Tap to wake.</string>
+    <string name="settings">Settings</string>
+    <string name="set_format">Time format</string>
+    <string name="set_24h">24-hour clock</string>
+    <string name="set_sensitivity">Motion sensitivity</string>
+    <string name="set_timeout">Dim after (seconds of stillness)</string>
+    <string name="set_dim">Dim brightness (%)</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+</resources>
