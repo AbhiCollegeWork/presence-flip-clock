@@ -41,13 +41,14 @@ class MotionAnalyzer(
             if (w == 0 || h == 0) return
 
             val cur = IntArray(gridW * gridH)
+            val lim = buf.limit()
             for (gy in 0 until gridH) {
                 val sy = gy * h / gridH
                 val rowBase = sy * rowStride
                 for (gx in 0 until gridW) {
                     val sx = gx * w / gridW
                     val idx = rowBase + sx * pixelStride
-                    cur[gy * gridW + gx] = if (idx in 0 until buf.limit()) buf.get(idx).toInt() and 0xFF else 0
+                    cur[gy * gridW + gx] = if (idx in 0 until lim) buf.get(idx).toInt() and 0xFF else 0
                 }
             }
 
@@ -56,22 +57,28 @@ class MotionAnalyzer(
             val luma = sum.toDouble() / cur.size          // overall scene brightness
 
             val p = prev
-            var meanDiff = 0.0
+            var changed = 0
             var fired = false
             if (p != null && luma >= darkLumaFloor) {      // skip motion in a dark/covered scene
-                var diff = 0L
-                for (i in cur.indices) diff += abs(cur[i] - p[i])
-                meanDiff = diff / cur.size.toDouble()
-                // sensitivity 1 -> threshold ~14 (big motion), 10 -> ~3 (twitchy)
-                val threshold = 14.0 - (sensitivity().coerceIn(1, 10) - 1) * 1.2
-                if (meanDiff > threshold) { onMotion(); fired = true }
+                // Cancel the global brightness oscillation (mains-lighting flicker beats with the
+                // camera and shifts the WHOLE frame every frame - the dominant false signal here).
+                // Then count cells that changed beyond that shift = real, localized presence.
+                var sumDelta = 0L
+                for (i in cur.indices) sumDelta += (cur[i] - p[i])
+                val globalShift = sumDelta.toDouble() / cur.size
+                for (i in cur.indices) if (abs((cur[i] - p[i]) - globalShift) > 45) changed++
+                // At delta 45 the static/flicker residual is ~0 cells, so it reliably dims;
+                // real close movement produces several strongly-changed cells.
+                // sensitivity 1 -> need 8 cells; 10 -> 2
+                val minCells = (9 - sensitivity().coerceIn(1, 10)).coerceAtLeast(2)
+                if (changed >= minCells) { onMotion(); fired = true }
             }
             prev = cur
 
-            // light heartbeat (~every 10s at 30fps): filter logcat with tag PresenceClock
-            if (frameCount++ % 300 == 0) {
-                Log.d("PresenceClock", "luma=%.1f diff=%.1f dark=%b motion=%b".format(
-                    luma, meanDiff, luma < darkLumaFloor, fired))
+            // light heartbeat (~every 5s at 30fps) for on-device diagnosis; tag PresenceClock
+            if (frameCount++ % 150 == 0) {
+                Log.d("PresenceClock", "luma=%.1f cells=%d dark=%b motion=%b".format(
+                    luma, changed, luma < darkLumaFloor, fired))
             }
         } catch (_: Throwable) {
             // never let a bad frame crash the clock

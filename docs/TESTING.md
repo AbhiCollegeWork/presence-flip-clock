@@ -46,7 +46,21 @@ display this is fully off). Power button -> `mWakefulness=Awake` and the clock i
 Trade-off documented: a truly-off screen can't run the camera, so wake is via the power
 button, not presence.
 
-Two bugs found and fixed during device testing:
+### Motion detection, calibrated on-device (v1.4)
+
+The first camera-wake attempts failed on real hardware and needed data to fix:
+- Averaging change across the whole grid diluted a hand-wave to nothing -> never woke.
+- Counting per-cell change caught it, but **mains-lighting flicker** (60 Hz beating with the
+  camera) oscillates the whole frame's brightness, reading as constant motion -> never dimmed.
+- Fix: subtract the global (flicker) brightness shift each frame, then count grid cells that
+  changed locally by more than 45 luma. Measured floors: still/flicker -> 0-1 cells (dims
+  reliably); a close hand/person -> several cells (wakes). Sensitivity sets the cell threshold.
+
+Verified end-to-end: still -> `cells=0, brightness -> 0.00`; close movement -> `cells=5,
+motion=true, brightness -> 1.00`. Note: a faint *distant* wave may not register on a wide
+front-camera FOV - move closer or raise sensitivity.
+
+Two earlier bugs found and fixed during device testing:
 1. **Covered camera never dimmed** - a dark lens produces noisy frames whose diff read as
    constant motion. Fixed with a dark-luminance gate (`luma < 12` -> no motion).
 2. **16 KB compatibility warning** on Android 16 - CameraX 1.3.4 shipped non-16 KB-aligned

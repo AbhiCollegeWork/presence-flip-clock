@@ -11,8 +11,8 @@ android {
         applicationId = "com.presenceflipclock"
         minSdk = 21           // Android 5.0 - runs on genuinely old phones
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4"
     }
 
     buildTypes {
