@@ -7,6 +7,9 @@
     <string name="set_sensitivity">Motion sensitivity</string>
     <string name="set_timeout">Dim after (seconds of stillness)</string>
     <string name="set_dim">Dim brightness (%)</string>
+    <string name="set_screenoff">Deep power-off (LCD / old phones)</string>
+    <string name="set_screenoff_sub">Turn the screen fully OFF when idle. Wake with the power button.</string>
+    <string name="admin_reason">Used only to turn the screen off when the room is empty. It never locks, wipes, or changes anything else. Wake the clock with the power button.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
 </resources>

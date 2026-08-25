@@ -25,4 +25,13 @@ class Prefs(ctx: Context) {
     var dimPercent: Int
         get() = sp.getInt("dimPercent", 0)
         set(v) { sp.edit().putInt("dimPercent", v.coerceIn(0, 60)).apply() }
+
+    /**
+     * Deep power-off: when idle, turn the screen fully OFF via Device Admin instead of dimming.
+     * Needed on LCD / old phones where dim-to-0 still shows a backlight glow. Wake with the
+     * power button (a truly-off screen cannot run the camera to detect presence).
+     */
+    var screenOffMode: Boolean
+        get() = sp.getBoolean("screenOffMode", false)
+        set(v) { sp.edit().putBoolean("screenOffMode", v).apply() }
 }

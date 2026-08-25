@@ -37,6 +37,15 @@ brightness -> 0.00 (animate=true)          (~30 s idle -> dims fully, looks off 
 brightness -> 1.00 (animate=true)          (tap/motion -> wakes)
 ```
 
+### Deep power-off mode (v1.2, real device)
+
+Verified on the S25 Ultra: enabling the mode + Device Admin, then idle ->
+`mWakefulness=Dozing` / `mScreenState=DOZE` (panel off; on an LCD phone with no always-on
+display this is fully off). Power button -> `mWakefulness=Awake` and the clock is the
+`topResumedActivity`, shown over the keyguard - so it returns instantly without unlocking.
+Trade-off documented: a truly-off screen can't run the camera, so wake is via the power
+button, not presence.
+
 Two bugs found and fixed during device testing:
 1. **Covered camera never dimmed** - a dark lens produces noisy frames whose diff read as
    constant motion. Fixed with a dark-luminance gate (`luma < 12` -> no motion).

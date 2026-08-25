@@ -47,6 +47,8 @@ anywhere - it is a few hundred brightness samples in memory, discarded immediate
 
 - Big flip-card clock with a per-digit flip animation, 12h or 24h
 - Presence dimming via the front camera (tunable sensitivity and idle timeout)
+- **Deep power-off mode** (opt-in, for LCD / old phones): truly turns the screen off when
+  idle via Device Admin, instead of dimming - no backlight glow. Wake with the power button.
 - Tap anywhere to wake (works even if you deny the camera)
 - Shows over the lock screen, stays full-screen, keeps the screen on
 - Gentle anti-burn-in pixel shift
@@ -87,6 +89,17 @@ clean, flip clock + date render (portrait and landscape), clock ticks, tap-to-wa
 long-press settings dialog work. On the real device the **front camera binds and streams**,
 so presence sensing is exercised on real hardware; with no camera (emulator) it falls back to
 tap-to-wake. Full matrix in [docs/TESTING.md](docs/TESTING.md).
+
+## Two idle behaviours
+
+- **Dim (default)** - screen stays on and fades to fully black via window brightness; the
+  camera wakes it. Perfect on OLED (looks off), and presence-driven. On an **LCD** panel,
+  brightness 0 can still show a faint backlight glow.
+- **Deep power-off (opt-in, Settings)** - when idle, the screen is truly powered off using a
+  Device Admin lock, so there is zero glow (ideal for LCD / 5-10 year old phones). Trade-off:
+  a truly-off screen cannot run the camera, so you **wake it with the power button**, not by
+  presence. For a dedicated clock phone, set the screen lock to None (Settings -> Security) so
+  the clock is glanceable the instant you wake it.
 
 ## Tips for a good desk clock
 

@@ -35,7 +35,18 @@ version, so presence detection is reliable. The cost is that the panel is always
 | `MotionAnalyzer.kt` | `ImageAnalysis.Analyzer` that reads the camera's luminance plane into a 32x24 grid and compares consecutive frames. Above a sensitivity-derived threshold, it fires `onMotion()`. |
 | `FlipClockView.kt` | `LinearLayout` assembling `HH : MM` from four `FlipDigitView`s + a colon; sizes itself to the screen (width-driven, height-capped). |
 | `FlipDigitView.kt` | One digit as a rounded dark card with a centre divider; animates a short vertical flip (`rotationX`) on change. |
-| `Prefs.kt` | `SharedPreferences` wrapper: 12/24h, idle timeout, motion sensitivity, dim %. |
+| `Prefs.kt` | `SharedPreferences` wrapper: 12/24h, idle timeout, motion sensitivity, dim %, deep-power-off toggle. |
+| `ClockDeviceAdminReceiver.kt` + `res/xml/device_admin.xml` | Device Admin with a single `force-lock` policy, used only by deep-power-off mode to turn the screen off when idle. |
+
+## Two idle behaviours
+
+- **Dim mode (default):** the window brightness fades to 0 while the app stays foreground;
+  the camera can still wake it. Best on OLED. On LCD, brightness 0 may still glow.
+- **Deep power-off mode (opt-in):** when idle, `MainActivity.checkIdle()` calls
+  `DevicePolicyManager.lockNow()` (requires the user to enable the Device Admin once) to
+  power the panel off - no glow, real battery saving on old/LCD phones. A truly-off screen
+  cannot run the camera, so wake is via the power button; `onResume` restores brightness and
+  the activity shows over the keyguard (`setShowWhenLocked` + `setTurnScreenOn`).
 
 ## Data flow
 

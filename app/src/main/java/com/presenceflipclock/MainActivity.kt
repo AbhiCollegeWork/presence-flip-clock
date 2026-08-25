@@ -2,6 +2,9 @@ package com.presenceflipclock
 
 import android.Manifest
 import android.animation.ValueAnimator
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -44,6 +47,9 @@ class MainActivity : AppCompatActivity() {
     private var bright = true
     private var brightnessAnim: ValueAnimator? = null
     private var lastMinuteShift = -1
+    private var lockedForIdle = false
+    private lateinit var dpm: DevicePolicyManager
+    private lateinit var adminComponent: ComponentName
 
     private val tickHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val tick = object : Runnable {
@@ -67,6 +73,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = Prefs(this)
+        dpm = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        adminComponent = ComponentName(this, ClockDeviceAdminReceiver::class.java)
+        // Self-heal: never hold Device Admin unless deep-power-off is actually on.
+        if (!prefs.screenOffMode && dpm.isAdminActive(adminComponent)) {
+            try { dpm.removeActiveAdmin(adminComponent) } catch (_: Exception) {}
+        }
         b = ActivityMainBinding.inflate(layoutInflater)
         setContentView(b.root)
 
@@ -145,12 +157,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun onMotion() {
         lastMotion = SystemClock.elapsedRealtime()
+        lockedForIdle = false
         if (!bright) setBrightness(1f, animate = true).also { bright = true }
     }
 
     private fun checkIdle() {
         val idleMs = prefs.idleTimeoutSec * 1000L
-        if (bright && SystemClock.elapsedRealtime() - lastMotion > idleMs) {
+        if (SystemClock.elapsedRealtime() - lastMotion <= idleMs) return
+
+        if (prefs.screenOffMode && dpm.isAdminActive(adminComponent)) {
+            // Deep power-off (LCD / old phones): actually turn the screen off. Wake = power button;
+            // onResume then restores brightness. lockNow once per idle episode.
+            if (!lockedForIdle) {
+                lockedForIdle = true
+                bright = false
+                try { dpm.lockNow() } catch (_: Exception) {}
+            }
+        } else if (bright) {
             bright = false
             setBrightness(prefs.dimPercent / 100f, animate = true)
         }
@@ -240,6 +263,12 @@ class MainActivity : AppCompatActivity() {
         box.addView(label(getString(R.string.set_dim)))
         val dim = seek(0, 60, prefs.dimPercent); box.addView(dim)
 
+        box.addView(label(getString(R.string.set_screenoff)))
+        val offMode = android.widget.Switch(this).apply {
+            text = getString(R.string.set_screenoff_sub); isChecked = prefs.screenOffMode
+        }
+        box.addView(offMode)
+
         AlertDialog.Builder(this)
             .setTitle(R.string.settings)
             .setView(box)
@@ -248,6 +277,18 @@ class MainActivity : AppCompatActivity() {
                 prefs.sensitivity = sens.progressToValue(1)
                 prefs.idleTimeoutSec = to.progressToValue(5)
                 prefs.dimPercent = dim.progressToValue(0)
+                prefs.screenOffMode = offMode.isChecked
+                if (offMode.isChecked && !dpm.isAdminActive(adminComponent)) {
+                    // Deep power-off needs Device Admin - prompt for it the first time.
+                    startActivity(
+                        Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+                            .putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
+                            .putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, getString(R.string.admin_reason))
+                    )
+                } else if (!offMode.isChecked && dpm.isAdminActive(adminComponent)) {
+                    // Turning the mode off relinquishes Device Admin.
+                    try { dpm.removeActiveAdmin(adminComponent) } catch (_: Exception) {}
+                }
                 updateClock(animate = false)
                 onMotion()
             }
