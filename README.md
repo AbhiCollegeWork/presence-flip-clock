@@ -6,6 +6,8 @@ and fades to **near-black when the room is still**, then lights back up the mome
 
 No root. No special hardware. No account. Nothing leaves the device.
 
+![How the app is put together](docs/diagrams/clock_01_arch.svg)
+
 ## Screenshots
 
 The flip animation, captured on a real device (Samsung Galaxy S25 Ultra):
@@ -31,8 +33,8 @@ the screen is off a non-root app can no longer read the camera (Android restrict
 camera access). So this app takes the approach that actually works within those limits:
 
 - It stays in the foreground with the screen kept on, and modulates **window brightness**
-  (full when present, ~2% when idle). Window brightness is app-local and needs **no
-  permission at all**.
+  (full when present, fully dark when idle; the dim level is adjustable and defaults to 0).
+  Window brightness is app-local and needs **no permission at all**.
 - Because the app stays foreground, the camera keeps analysing frames on every Android
   version, so presence detection is reliable.
 
@@ -43,9 +45,15 @@ to spread that wear. For a phone living on a charger as a clock, this is a good 
 ## How presence detection works
 
 `MotionAnalyzer` reads only the camera's **luminance plane** into a 32x24 grid and compares
-each frame to the last one. If the average change crosses a threshold (set by the sensitivity
-slider), that counts as motion. No frame is ever decoded to an image, saved, or sent
-anywhere - it is a few hundred brightness samples in memory, discarded immediately.
+each frame to the last one. It does **not** average the whole frame: that dilutes a real hand
+wave to nothing. Instead it subtracts the frame's **global brightness shift** (which cancels
+mains-lighting flicker and auto-exposure drift) and then counts how many grid cells changed
+**locally**. Motion is declared when that count crosses the sensitivity threshold.
+
+No frame is ever decoded to an image, saved, or sent anywhere. What exists is 768 brightness
+samples in memory, overwritten on the next frame.
+
+![How the camera decides someone is there](docs/diagrams/clock_02_motion.svg)
 
 ## Features
 

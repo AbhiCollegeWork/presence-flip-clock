@@ -3,6 +3,8 @@
 Presence Flip Clock is a single-activity Android app in Kotlin using plain Android Views
 (no Compose, no third-party UI libraries). It targets old, non-rooted phones (minSdk 21).
 
+![How the app is put together](diagrams/clock_01_arch.svg)
+
 ## The core design decision: brightness, not power
 
 The goal is "screen bright when someone is near, dark when the room is empty." The obvious
@@ -17,7 +19,10 @@ So the app never changes the screen's power state. Instead it:
 
 1. Stays in the foreground with `FLAG_KEEP_SCREEN_ON` (the OS never sleeps the screen).
 2. Modulates **window brightness** (`WindowManager.LayoutParams.screenBrightness`) between
-   full (present) and ~2% (idle). This is a per-window value that needs **no permission**.
+   full (present) and fully dark (idle; the default dim level is 0, adjustable in settings).
+   This is a per-window value that needs **no permission**.
+
+![The two idle modes](diagrams/clock_03_modes.svg)
 
 Because the app stays foreground, the camera keeps delivering frames on every Android
 version, so presence detection is reliable. The cost is that the panel is always on
